@@ -5,12 +5,12 @@ THREADS=${2:-2}
 
 load_cmd="./src/build/utils/setup.php \
     --osm-file $OSMFILE \
-    -- all \
+    --all \
     --threads $THREADS"
 
 load_reverse_only_cmd="./src/build/utils/setup.php \
     --osm-file $OSMFILE \
-    -- all \
+    --all \
     --threads $THREADS \
     --reverse-only"
 
