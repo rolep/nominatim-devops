@@ -30,17 +30,17 @@ RUN apt-get -y update -qq && \
 
 # Nominatim install
 ENV NOMINATIM_VERSION v3.4.1
-RUN mkdir -p /app && cd /app && git clone --recursive https://github.com/openstreetmap/Nominatim ./src && \
+RUN mkdir -p /home/nominatim && cd /home/nominatim && git clone --recursive https://github.com/openstreetmap/Nominatim ./src && \
     cd ./src && git checkout tags/$NOMINATIM_VERSION && git submodule update --recursive --init && \
     mkdir build && cd build && cmake .. && make && \
-    rm -rf /app/src/.git
+    rm -rf /home/nominatim/src/.git
 
 # Load initial data
-RUN curl http://www.nominatim.org/data/country_grid.sql.gz > /app/src/data/country_osm_grid.sql.gz
-RUN chmod o=rwx /app/src/build
+RUN curl http://www.nominatim.org/data/country_grid.sql.gz > /home/nominatim/src/data/country_osm_grid.sql.gz
+RUN chmod o=rwx /home/nominatim/src/build
 
-COPY local.php /app/src/build/settings/local.php
-COPY loadmapfile.sh /app/loadmapfile.sh
+COPY local.php /home/nominatim/src/build/settings/local.php
+COPY loadmapfile.sh /home/nominatim/loadmapfile.sh
 
 
 
@@ -49,7 +49,7 @@ FROM with-osmosis-and-osmium
 RUN groupadd -r -g 403 nominatim && \
     useradd -r -u 403 -g nominatim -m -d /home/nominatim -s /bin/bash -c Nominatim nominatim
 
-COPY --from=build /app/ /home/nominatim/
+COPY --from=build /home/nominatim /home/nominatim/
 RUN chown -R nominatim:nominatim /home/nominatim
 
 COPY 10-nominatim.conf /opt/docker/etc/httpd/conf.d/
