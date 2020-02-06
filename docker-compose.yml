@@ -11,6 +11,7 @@ services:
       - POSTGRES_DBNAME=nominatim
       - POSTGRES_TEMPLATE_EXTENSIONS=true
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology
+      - EXTRA_CONF=include_dir='conf.d'
     networks: 
       - internal
     volumes:

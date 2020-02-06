@@ -3,12 +3,12 @@
 OSMFILE=$1
 THREADS=${2:-2}
 
-load_cmd = "./src/build/utils/setup.php \
+load_cmd="./src/build/utils/setup.php \
     --osm-file $OSMFILE \
     -- all \
     --threads $THREADS"
 
-load_reverse_only_cmd = "./src/build/utils/setup.php \
+load_reverse_only_cmd="./src/build/utils/setup.php \
     --osm-file $OSMFILE \
     -- all \
     --threads $THREADS \
