@@ -30,12 +30,12 @@ services:
       - NOMINATIM_SETTINGS=/home/nominatim/my_settings.php
       - NOMINATIM_IMPORT_STYLE=admin
       - NOMINATIM_REVERSE_ONLY=True
-      - NOMINATIM_DB_DSN='pgsql://nominatim:password1234@nominatim-postgres:5432/nominatim'
+      - NOMINATIM_DB_DSN=pgsql://nominatim:password1234@nominatim-postgres:5432/nominatim
       - NOMINATIM_BASE_URL=my.nominatim.com
       - PHP_DISMOD=amqp,apcu,bcmath,bz2,curl,gd,imagick,imap,ioncube,ldap,mbstring,memcached,mongodb,mysqli,mysqlnd,pdo_mysql,pdo_sqlite,redis,soap,sqlite3,vips,zip
     volumes:
       - ./my_settings.php:/home/nominatim/my_settings.php:ro
-      # - ./maps:/maps
+      # - ./maps:/maps:ro
     networks: 
       - gateway
       - internal

@@ -43,13 +43,14 @@ RUN mkdir -p /home/nominatim && cd /home/nominatim && git clone --recursive http
     rm -rf /home/nominatim/src/.git && \
     chown -R nominatim:nominatim /home/nominatim
 
+# Load initial data
+RUN curl http://www.nominatim.org/data/country_grid.sql.gz > /home/nominatim/src/data/country_osm_grid.sql.gz && \
+    chmod o=rwx /home/nominatim/src/build
+
 COPY local.php /home/nominatim/src/build/settings/local.php
 COPY loadmapfile.sh /home/nominatim/loadmapfile.sh
 
-# Load initial data
-RUN curl http://www.nominatim.org/data/country_grid.sql.gz > /home/nominatim/src/data/country_osm_grid.sql.gz && \
-    chmod o=rwx /home/nominatim/src/build && \
-    chown -R nominatim:nominatim /home/nominatim
+RUN chown -R nominatim:nominatim /home/nominatim
 
 COPY 10-nominatim.conf /opt/docker/etc/httpd/conf.d/
 
