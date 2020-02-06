@@ -1,4 +1,5 @@
-FROM webdevops/php-apache:7.4 AS with-osmosis-and-osmium
+# Intermediate container - PHP with Apache, plus Osmosis, plus Osmium
+FROM webdevops/php-apache:7.4 AS php-with-osmosis-and-osmium
 
 # Install osmosis
 RUN mkdir -p /opt/osmosis && \
@@ -18,8 +19,8 @@ RUN apt-get -y update -qq && \
     rm -rf /tmp/* /var/tmp/*
 
 
-
-FROM with-osmosis-and-osmium
+# Nominatim container
+FROM php-with-osmosis-and-osmium AS nominatim
 
 RUN apt-get -y update -qq && \
     apt-get install -y build-essential cmake g++ libboost-dev libboost-system-dev \
@@ -47,14 +48,31 @@ RUN mkdir -p /home/nominatim && cd /home/nominatim && git clone --recursive http
 RUN curl http://www.nominatim.org/data/country_grid.sql.gz > /home/nominatim/src/data/country_osm_grid.sql.gz && \
     chmod o=rwx /home/nominatim/src/build
 
-COPY local.php /home/nominatim/src/build/settings/local.php
-COPY loadmapfile.sh /home/nominatim/loadmapfile.sh
+COPY nominatim/local.php /home/nominatim/src/build/settings/local.php
+COPY nominatim/loadmapfile.sh /home/nominatim/loadmapfile.sh
 
 RUN chown -R nominatim:nominatim /home/nominatim
 
-COPY 10-nominatim.conf /opt/docker/etc/httpd/conf.d/
+COPY nominatim/10-nominatim.conf /opt/docker/etc/httpd/conf.d/
 
-ENV NOMINATIM_VERSION v3.4.1
+ENV PHP_DISMOD=amqp,apcu,bcmath,bz2,curl,gd,imagick,imap,ioncube,ldap,mbstring,memcached,mongodb,mysqli,mysqlnd,pdo_mysql,pdo_sqlite,redis,soap,sqlite3,vips,zip
 
 USER nominatim
 WORKDIR /home/nominatim
+
+
+# Postgres with PostGIS container
+FROM kartoza/postgis:11.0-2.5 AS nominatim-postgres
+
+# It requires nominatim.so library for C- functions - we copy it from nominatim container
+COPY --from=nominatim /home/nominatim/src/build/module/nominatim.so /home/nominatim/src/build/module/nominatim.so 
+RUN chown -R postgres:postgres /home/nominatim
+
+COPY postgres/create-www-data-user.sql /docker-entrypoint-initdb.d/create-www-data-user.sql
+
+ENV POSTGRES_USER=nominatim
+ENV POSTGRES_PASS=nominatim1234
+ENV POSTGRES_DBNAME=nominatim
+ENV POSTGRES_TEMPLATE_EXTENSIONS=true
+ENV POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology
+ENV EXTRA_CONF=include_dir='conf.d'

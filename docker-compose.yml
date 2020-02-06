@@ -3,7 +3,10 @@ version: '3.4'
 services:
   nominatim-postgres:
     container_name: nominatim-postgres
-    image: kartoza/postgis:11.0-2.5
+    image: nominatim-postgres
+    build:
+      context: .
+      target: nominatim-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=nominatim
@@ -17,13 +20,14 @@ services:
     volumes:
       # - ./postgresql.conf.d/initial_import.conf:/etc/postgresql/11/main/conf.d/initial_import.conf:ro
       - ./postgresql.conf.d/pg_tune.conf:/etc/postgresql/11/main/conf.d/pg_tune.conf:ro
-      - ./create-www-data-user.sh:/docker-entrypoint-initdb.d/create-www-data-user.sh
       - nominatim-db:/var/lib/postgresql
 
   nominatim-api:
     container_name: nominatim-api
-    image: nominatim-devops
-    build: .
+    image: nominatim-api
+    build:
+      context: .
+      target: nominatim
     restart: unless-stopped
     # command: ["bash", "/home/nominatim/loadmapfile.sh", "/maps/somemap.osm.pbf"]
     environment:
