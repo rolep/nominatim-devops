@@ -1,0 +1,85 @@
+---
+version: '3.4'
+services:
+  nominatim-postgres:
+    container_name: nominatim-postgres
+    image: kartoza/postgis:11.0-2.5
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=nominatim
+      - POSTGRES_PASS=nominatim1234
+      - POSTGRES_DBNAME=nominatim
+    networks: 
+      - internal
+    volumes:
+      # - ./postgresql.conf.d/initial_import.conf:/etc/postgresql/11/main/conf.d/initial_import.conf:ro
+      - ./postgresql.conf.d/pg_tune.conf:/etc/postgresql/11/main/conf.d/pg_tune.conf:ro
+      - ./create-www-data-user.sh:/docker-entrypoint-initdb.d/create-www-data-user.sh
+      - nominatim-db:/var/lib/postgresql
+
+  nominatim-api:
+    container_name: nominatim-api
+    image: nominatim-devops
+    build: .
+    restart: unless-stopped
+    # command: ["bash", "/home/nominatim/loadmapfile.sh", "/maps/somemap.osm.pbf"]
+    environment:
+      - NOMINATIM_SETTINGS=/home/nominatim/my_settings.php
+      - NOMINATIM_IMPORT_STYLE=admin
+      - NOMINATIM_REVERSE_ONLY=True
+      - NOMINATIM_DB_DSN='pgsql://nominatim:password1234@nominatim-postgres:5432/nominatim'
+      - NOMINATIM_BASE_URL=my.nominatim.com
+      - PHP_DISMOD=amqp,apcu,bcmath,bz2,curl,gd,imagick,imap,ioncube,ldap,mbstring,memcached,mongodb,mysqli,mysqlnd,pdo_mysql,pdo_sqlite,redis,soap,sqlite3,vips,zip
+    volumes:
+      - ./my_settings.php:/home/nominatim/my_settings.php:ro
+      # - ./maps:/maps
+    networks: 
+      - gateway
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nominatim-api.rule=Host(`my.nominatim.com`)"
+      - "traefik.http.services.nominatim-api.loadbalancer.server.port=80"
+      - "traefik.http.routers.nominatim-api.tls=true"
+      - "traefik.http.routers.nominatim-api.tls.certresolver=le"
+      - "traefik.http.routers.nominatim-api.entrypoints=web-secure"
+      - "traefik.http.routers.nominatim-api.middlewares=secured,nom-ratelimit"
+      - "traefik.http.middlewares.secured.chain.middlewares=https-only,known-ips,auth-users,nom-ratelimit"
+      - "traefik.http.middlewares.auth-users.basicauth.users=user:$$apr1$$InU9fLmG$$fe9YI9iVsCXg.wru6RkeQ1"
+      - "traefik.http.middlewares.https-only.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.known-ips.ipwhitelist.sourceRange=192.168.1.7,127.0.0.1/32"
+      - "traefik.http.middlewares.nom-ratelimit.ratelimit.burst=100"
+
+  traefik:
+    image: traefik:v2.1
+    restart: unless-stopped
+    command: >
+      --api.insecure=true
+      --api.dashboard=true
+      --providers.docker=true
+      --providers.docker.exposedbydefault=false
+      --log.level="INFO"
+      --accesslog=true
+      --entryPoints.web.address=:80
+      --entryPoints.web-secure.address=:443
+      --certificatesResolvers.le.acme.email=your-email@your-domain.org
+      --certificatesResolvers.le.acme.storage=/acme/acme.json
+      --certificatesResolvers.le.acme.httpChallenge.entryPoint=web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:8080:8080"
+    networks: 
+      - gateway
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-acme:/acme
+
+volumes:
+  nominatim-db:
+  traefik-acme:
+
+networks:
+  gateway:
+  internal:
+...
