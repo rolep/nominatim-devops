@@ -9,6 +9,8 @@ services:
       - POSTGRES_USER=nominatim
       - POSTGRES_PASS=nominatim1234
       - POSTGRES_DBNAME=nominatim
+      - POSTGRES_TEMPLATE_EXTENSIONS=true
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology
     networks: 
       - internal
     volumes:

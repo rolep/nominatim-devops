@@ -1,3 +1,3 @@
 #!/bin/sh
 
-createuser -SDR www-data
+su postgres -c "createuser -SDR www-data"
