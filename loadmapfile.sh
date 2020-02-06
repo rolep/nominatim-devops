@@ -39,7 +39,7 @@ if ! [ "$AS_NOMINATIM" = "True" ]; then
   exit 1
 fi
 
-eval "$chooosen_cmd"
+eval "$choosen_cmd"
 
 if [ -n "$DROP_ADTER_IMPORT" ]; then
   eval "$drop_cmd"
