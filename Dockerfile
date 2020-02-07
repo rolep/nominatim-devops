@@ -27,7 +27,8 @@ RUN apt-get -y update -qq && \
     libboost-filesystem-dev libexpat1-dev zlib1g-dev libxml2-dev \
     libbz2-dev libpq-dev libgeos-dev libgeos++-dev libproj-dev \
     postgresql-server-dev-11 postgresql-contrib-11 \
-    libboost-python-dev && \
+    libboost-python-dev \
+    osmctools osmium-tool && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* /var/tmp/*
