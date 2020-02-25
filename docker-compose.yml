@@ -11,7 +11,7 @@ services:
     environment:
       - POSTGRES_USER=nominatim
       - POSTGRES_PASS=nominatim1234
-      - POSTGRES_DBNAME=nominatim
+      - POSTGRES_DBNAME=postgres
       - POSTGRES_TEMPLATE_EXTENSIONS=true
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology
       - EXTRA_CONF=include_dir='conf.d'
@@ -39,7 +39,7 @@ services:
       - PHP_DISMOD=amqp,apcu,bcmath,bz2,curl,gd,imagick,imap,ioncube,ldap,mbstring,memcached,mongodb,mysqli,mysqlnd,pdo_mysql,pdo_sqlite,redis,soap,sqlite3,vips,zip
     volumes:
       - ./my_settings.php:/home/nominatim/my_settings.php:ro
-      # - ./maps:/maps:ro
+      # - ./maps:/maps
     networks: 
       - gateway
       - internal
@@ -54,7 +54,7 @@ services:
       - "traefik.http.middlewares.secured.chain.middlewares=https-only,known-ips,auth-users,nom-ratelimit"
       - "traefik.http.middlewares.auth-users.basicauth.users=user:$$apr1$$InU9fLmG$$fe9YI9iVsCXg.wru6RkeQ1"
       - "traefik.http.middlewares.https-only.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.known-ips.ipwhitelist.sourceRange=192.168.1.7,127.0.0.1/32"
+      - "traefik.http.middlewares.known-ips.ipwhitelist.sourceRange=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
       - "traefik.http.middlewares.nom-ratelimit.ratelimit.burst=100"
 
   traefik:

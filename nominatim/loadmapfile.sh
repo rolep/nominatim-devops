@@ -41,7 +41,7 @@ fi
 
 eval "$choosen_cmd"
 
-if [ -n "$DROP_ADTER_IMPORT" ]; then
+if [ -n "$DROP_AFTER_IMPORT" ]; then
   eval "$drop_cmd"
 fi
 

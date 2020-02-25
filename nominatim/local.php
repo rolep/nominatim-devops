@@ -1,7 +1,7 @@
 <?php
 // Paths
 @define('CONST_Postgresql_Version', '11');
-@define('CONST_Postgis_Version', '3.0');
+@define('CONST_Postgis_Version', '2.5');
 // Website settings
 @define('CONST_Replication_Url', 'http://download.geofabrik.de/europe/monaco-updates');
 @define('CONST_Replication_MaxInterval', '86400');     // Process each update separately, osmosis cannot merge multiple updates
